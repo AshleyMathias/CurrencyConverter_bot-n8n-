@@ -1,0 +1,164 @@
+{
+  "name": "My workflow",
+  "nodes": [
+    {
+      "parameters": {
+        "updates": [
+          "message"
+        ],
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegramTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        0,
+        0
+      ],
+      "id": "e91ce0b9-4d7e-4be2-81f7-7006774967b9",
+      "name": "Telegram Trigger",
+      "webhookId": "8ebe132c-3d19-45b4-8d9c-9b12d40d155e",
+      "credentials": {
+        "telegramApi": {
+          "id": "di1wjEKYeLDv81Ib",
+          "name": "Telegram account 3"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "jsCode": "const input = $json[\"message\"][\"text\"];\nconst regex = /convert\\s+(\\d+(?:\\.\\d+)?)\\s+([A-Za-z]{3})\\s+to\\s+([A-Za-z]{3})/i;\n\nconst match = input.match(regex);\n\nif (!match) {\n  throw new Error(\"Message format should be like: Convert 100 USD to INR\");\n}\n\nreturn [\n  {\n    json: {\n      amount: match[1],\n      fromCurrency: match[2].toUpperCase(),\n      toCurrency: match[3].toUpperCase()\n    }\n  }\n];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        220,
+        -140
+      ],
+      "id": "f75c8028-71df-48c8-be48-0995e29375a4",
+      "name": "Code"
+    },
+    {
+      "parameters": {
+        "url": "=https://api.exchangerate.host/convert?from={{$json.from}}&to={{$json.to}}&amount={{$json.amount}}",
+        "sendQuery": true,
+        "queryParameters": {
+          "parameters": [
+            {
+              "name": "from",
+              "value": "={{$json[\"fromCurrency\"]}}"
+            },
+            {
+              "name": "to",
+              "value": "={{$json[\"toCurrency\"]}}"
+            },
+            {
+              "name": "amount",
+              "value": "={{$json[\"amount\"]}}"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.httpRequest",
+      "typeVersion": 4.2,
+      "position": [
+        440,
+        0
+      ],
+      "id": "3241449e-b89b-45fc-b858-2b53edf46430",
+      "name": "HTTP Request"
+    },
+    {
+      "parameters": {
+        "jsCode": "const from = $json.query.from;\nconst to = $json.query.to;\nconst amount = $json.query.amount;\nconst result = $json.result;\n\nreturn [{\n  json: {\n    message: `✅ ${amount} ${from} = ${result.toFixed(2)} ${to}`\n  }\n}];\n"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        660,
+        -140
+      ],
+      "id": "4418415b-530c-4499-aa7e-1b29acc9c0e5",
+      "name": "Code1"
+    },
+    {
+      "parameters": {
+        "chatId": "={{$json[\"message\"][\"chat\"][\"id\"]}}",
+        "text": "={{$json[\"message\"]}}",
+        "additionalFields": {}
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        880,
+        0
+      ],
+      "id": "883ca6fe-4f98-4633-b069-c9046952a0db",
+      "name": "Telegram",
+      "webhookId": "353f0c17-5065-41fe-a356-e3d4def02f84",
+      "credentials": {
+        "telegramApi": {
+          "id": "di1wjEKYeLDv81Ib",
+          "name": "Telegram account 3"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Telegram Trigger": {
+      "main": [
+        [
+          {
+            "node": "Code",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code": {
+      "main": [
+        [
+          {
+            "node": "HTTP Request",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "HTTP Request": {
+      "main": [
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Telegram",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "ddfa3693-dc2d-488d-ab99-c00aadae3f26",
+  "meta": {
+    "instanceId": "8165fdb40026658032009a0d1fa4414c8a803bca194bfbf9c9bd83390f574456"
+  },
+  "id": "ExtJ4q9yNogk7FCG",
+  "tags": []
+}
