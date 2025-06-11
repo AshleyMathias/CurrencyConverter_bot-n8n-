@@ -2,6 +2,7 @@
 
 This n8n automation workflow converts currency values using a real-time exchange rate API and sends the results via Telegram.
 
+Curreny Convert Screenshot! (Currency_Converter_Bot(workflow).jpg)
 📌 Features
 - Accepts two currency codes and an amount.
 - Retrieves live exchange rates via an API (ExchangeRate-API or similar).
